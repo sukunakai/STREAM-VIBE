@@ -3,27 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamVibe Admin</title>
+    <title>StreamVibe Admin - Phone Upload</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background: #121212; color: #fff; font-family: Arial; padding: 20px; }
         .box { max-width: 400px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 8px; }
-        input, select { width: 100%; padding: 10px; margin: 10px 0; background: #2a2a2a; border: 1px solid #444; color: #fff; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #e50914; color: #fff; border: none; font-weight: bold; cursor: pointer; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; background: #2a2a2a; border: 1px solid #444; color: #fff; box-sizing: border-box; border-radius: 4px; }
+        button { width: 100%; padding: 12px; background: #e50914; color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; margin-top: 10px; }
+        label { font-size: 14px; color: #aaa; }
     </style>
 </head>
 <body>
     <div class="box">
-        <h2>Admin Upload</h2>
+        <h2>Upload Movie from Phone</h2>
         <form id="form">
-            <input type="text" id="t" placeholder="Title" required>
+            <label>Movie Title:</label>
+            <input type="text" id="t" placeholder="Movie Name" required>
+            
+            <label>Category:</label>
             <select id="c">
                 <option value="Movie">Movie</option>
                 <option value="Anime">Anime</option>
+                <option value="Series">TV Series</option>
             </select>
-            <input type="url" id="p" placeholder="Poster URL" required>
-            <input type="url" id="v" placeholder="Video URL" required>
-            <button type="submit">Upload Now</button>
+            
+            <label>Select Poster Image (from Phone):</label>
+            <input type="file" id="posterFile" accept="image/*" required>
+            
+            <label>Select Video File (from Phone):</label>
+            <input type="file" id="videoFile" accept="video/*" required>
+            
+            <button type="submit" id="subBtn">Upload to Cloud</button>
         </form>
     </div>
 
@@ -35,22 +45,55 @@
 
         document.getElementById('form').onsubmit = async (e) => {
             e.preventDefault();
-            alert('Button dab gaya, data bhej rahe hain...');
+            const btn = document.getElementById('subBtn');
+            btn.innerText = 'Uploading files... Please wait';
+            btn.disabled = true;
 
-            const { data, error } = await sb.from('movies').insert([
-                {
-                    title: document.getElementById('t').value,
-                    category: document.getElementById('c').value,
-                    poster_url: document.getElementById('p').value,
-                    video_url: document.getElementById('v').value
-                }
-            ]);
+            try {
+                const title = document.getElementById('t').value;
+                const category = document.getElementById('c').value;
+                const posterFile = document.getElementById('posterFile').files[0];
+                const videoFile = document.getElementById('videoFile').files[0];
 
-            if (error) {
-                alert('Database Error: ' + error.message);
-            } else {
-                alert('Success! Movie database mein chali gayi.');
+                const time = Date.now();
+                const posterName = `${time}_${posterFile.name}`;
+                const videoName = `${time}_${videoFile.name}`;
+
+                // 1. Upload Poster to Supabase 'media' bucket
+                const { error: posterError } = await sb.storage
+                    .from('media')
+                    .upload(posterName, posterFile);
+                if (posterError) throw posterError;
+
+                // 2. Upload Video to Supabase 'media' bucket
+                const { error: videoError } = await sb.storage
+                    .from('media')
+                    .upload(videoName, videoFile);
+                if (videoError) throw videoError;
+
+                // 3. Get Public URLs
+                const { data: posterUrlData } = sb.storage.from('media').getPublicUrl(posterName);
+                const { data: videoUrlData } = sb.storage.from('media').getPublicUrl(videoName);
+
+                // 4. Save entry in movies table
+                const { error: dbError } = await sb.from('movies').insert([
+                    {
+                        title: title,
+                        category: category,
+                        poster_url: posterUrlData.publicUrl,
+                        video_url: videoUrlData.publicUrl
+                    }
+                ]);
+
+                if (dbError) throw dbError;
+
+                alert('Success! Movie phone se upload ho gayi hai. 🎉');
                 document.getElementById('form').reset();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                btn.innerText = 'Upload to Cloud';
+                btn.disabled = false;
             }
         };
     </script>
