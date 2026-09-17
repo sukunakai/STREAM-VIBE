@@ -10,12 +10,14 @@
         .search-bar { width: 70%; padding: 8px 12px; border-radius: 20px; border: none; background: #2a2a2a; color: white; }
         .section-title { padding: 10px 15px; font-size: 18px; font-weight: bold; }
         .movie-grid { display: flex; overflow-x: auto; padding: 10px 15px; gap: 15px; }
-        .movie-card { min-width: 120px; background: #1e1e1e; border-radius: 8px; overflow: hidden; text-align: center; }
+        .movie-card { min-width: 120px; background: #1e1e1e; border-radius: 8px; overflow: hidden; text-align: center; cursor: pointer; }
         .movie-card img { width: 120px; height: 170px; object-fit: cover; }
         .movie-title { font-size: 12px; padding: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .upload-btn-container { padding: 20px; text-align: center; }
         .upload-btn { background: #e50914; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; text-decoration: none; }
     </style>
+    <!-- Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="header">
@@ -27,10 +29,48 @@
     </div>
     <div class="section-title">Trending Movies</div>
     <div class="movie-grid" id="movieGrid">
-        <div class="movie-card">
-            <img src="https://via.placeholder.com/120x170" alt="Poster">
-            <div class="movie-title">Jujutsu Kaisen</div>
-        </div>
+        <p style="padding: 10px; color: #888;">Loading movies from database...</p>
     </div>
+
+    <script>
+        // Database Connection
+        const supabaseUrl = 'https://jjpzecchomlrjtmvshvn.supabase.co';
+        const supabaseKey = 'sb_publishable_0E5zGq8-reKSdg8hjaw5SA__LsyIBIm';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function fetchMovies() {
+            // Database se movies la rahe hain
+            const { data, error } = await supabase.from('movies').select('*').order('created_at', { ascending: false });
+            
+            const grid = document.getElementById('movieGrid');
+            grid.innerHTML = ''; 
+
+            if (error) {
+                grid.innerHTML = '<p style="color: red;">Error loading movies</p>';
+                return;
+            }
+
+            if (data.length === 0) {
+                grid.innerHTML = '<p>No movies uploaded yet. Upload one now!</p>';
+                return;
+            }
+
+            // Har movie ka card banana
+            data.forEach(movie => {
+                const card = document.createElement('div');
+                card.className = 'movie-card';
+                // Movie par click karte hi video play hone jayegi (abhi ke liye direct link khulega)
+                card.onclick = () => window.location.href = movie.video_url; 
+                
+                card.innerHTML = `
+                    <img src="${movie.poster_url}" alt="Poster">
+                    <div class="movie-title">${movie.title}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        fetchMovies();
+    </script>
 </body>
 </html>
