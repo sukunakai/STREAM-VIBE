@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream Vibe - OTT</title>
+    <style>
+        body { background-color: #121212; color: #ffffff; font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        .header { padding: 15px; background: #1f1f1f; display: flex; justify-content: space-between; align-items: center; }
+        .search-bar { width: 70%; padding: 8px 12px; border-radius: 20px; border: none; background: #2a2a2a; color: white; }
+        .section-title { padding: 10px 15px; font-size: 18px; font-weight: bold; }
+        .movie-grid { display: flex; overflow-x: auto; padding: 10px 15px; gap: 15px; }
+        .movie-card { min-width: 120px; background: #1e1e1e; border-radius: 8px; overflow: hidden; text-align: center; }
+        .movie-card img { width: 120px; height: 170px; object-fit: cover; }
+        .movie-title { font-size: 12px; padding: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .upload-btn-container { padding: 20px; text-align: center; }
+        .upload-btn { background: #e50914; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>StreamVibe</h2>
+        <input type="text" class="search-bar" placeholder="Search Movies, Anime...">
+    </div>
+    <div class="upload-btn-container">
+        <a href="../admin/upload.html" class="upload-btn">+ Upload Movie/Series</a>
+    </div>
+    <div class="section-title">Trending Movies</div>
+    <div class="movie-grid" id="movieGrid">
+        <div class="movie-card">
+            <img src="https://via.placeholder.com/120x170" alt="Poster">
+            <div class="movie-title">Jujutsu Kaisen</div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Content - StreamVibe</title>
+    <style>
+        body { background-color: #121212; color: #ffffff; font-family: Arial, sans-serif; padding: 20px; }
+        .form-container { max-width: 400px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 8px; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 4px; }
+        button { width: 100%; padding: 10px; background: #e50914; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Upload Movie / Series</h2>
+        <form id="uploadForm">
+            <label>Title:</label>
+            <input type="text" id="title" placeholder="Movie Name" required>
+            <label>Category:</label>
+            <select id="category">
+                <option value="Movie">Movie</option>
+                <option value="Anime">Anime</option>
+                <option value="Series">TV Series</option>
+            </select>
+            <label>Poster Image URL:</label>
+            <input type="url" id="poster" placeholder="Image link (URL)" required>
+            <label>Video Streaming URL:</label>
+            <input type="url" id="videoUrl" placeholder="MP4 / HLS Link" required>
+            <button type="submit">Upload Now</button>
+        </form>
+    </div>
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Upload feature database connect hone ke baad live hoga!');
+        });
+    </script>
+</body>
+</html>
