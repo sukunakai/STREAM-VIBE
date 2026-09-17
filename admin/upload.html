@@ -9,6 +9,7 @@
         .form-container { max-width: 400px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 8px; }
         input, select { width: 100%; padding: 10px; margin: 10px 0; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
         button { width: 100%; padding: 10px; background: #e50914; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        #statusMsg { margin-top: 15px; padding: 10px; border-radius: 4px; text-align: center; font-weight: bold; display: none; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -28,8 +29,9 @@
             <input type="url" id="poster" placeholder="Image link (URL)" required>
             <label>Video Streaming URL:</label>
             <input type="url" id="videoUrl" placeholder="MP4 / HLS Link" required>
-            <button type="submit">Upload Now</button>
+            <button type="submit" id="submitBtn">Upload Now</button>
         </form>
+        <div id="statusMsg"></div>
     </div>
 
     <script>
@@ -38,22 +40,39 @@
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         document.getElementById('uploadForm').addEventListener('submit', async function(e) {
-            e.preventDefault(); 
+            e.preventDefault();
             
+            const btn = document.getElementById('submitBtn');
+            const msg = document.getElementById('statusMsg');
+            btn.innerText = 'Uploading...';
+            msg.style.display = 'none';
+
             const title = document.getElementById('title').value;
             const category = document.getElementById('category').value;
             const poster_url = document.getElementById('poster').value;
             const video_url = document.getElementById('videoUrl').value;
 
-            const { data, error } = await supabase
-                .from('movies')
-                .insert([{ title: title, category: category, poster_url: poster_url, video_url: video_url }]);
+            try {
+                const { data, error } = await supabase
+                    .from('movies')
+                    .insert([{ title, category, poster_url, video_url }]);
 
-            if (error) {
-                alert('Error: ' + error.message);
-            } else {
-                alert('Movie Uploaded Successfully! 🎉');
+                if (error) {
+                    throw error;
+                }
+
+                msg.style.display = 'block';
+                msg.style.background = '#28a745';
+                msg.style.color = 'white';
+                msg.innerText = 'Movie Uploaded Successfully! 🎉';
                 document.getElementById('uploadForm').reset();
+            } catch (err) {
+                msg.style.display = 'block';
+                msg.style.background = '#dc3545';
+                msg.style.color = 'white';
+                msg.innerText = 'Failed: ' + err.message;
+            } finally {
+                btn.innerText = 'Upload Now';
             }
         });
     </script>
