@@ -6,9 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-user:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
@@ -21,20 +20,10 @@ jobs:
     - name: Install PWABuilder CLI
       run: npm install -g @pwabuilder/cli
 
-    - name: Setup Pages / Static Hosting for Build
-      run: |
-        mkdir -p dist/user dist/admin
-        cp index.html dist/user/index.html
-        cp admin.html dist/admin/index.html
-
-    - name: Generate User App Manifest & Package
-      run: |
-        pwabuilder generate --name "StreamVibe" --short_name "StreamVibe" --start_url "/" --background_color "#080b11" --theme_color "#e50914" --icon "https://via.placeholder.com/512" --output ./user-app-package
-
-    - name: Build Android APK via PWABuilder API (User)
+    - name: Build Android APK for User App
       uses: casualjim/pwabuilder-action@v2
       with:
-        url: 'https://sukunakai.github.io/STREAM-VIBE/'
+        url: 'https://sukunakai.github.io/STREAM-VIBE/user/'
         platform: 'android'
         output: 'user-apk'
 
@@ -44,8 +33,29 @@ jobs:
         name: StreamVibe-User-APK
         path: user-apk/**/*.apk
 
+  build-admin:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install PWABuilder CLI
+      run: npm install -g @pwabuilder/cli
+
+    - name: Build Android APK for Admin Panel
+      uses: casualjim/pwabuilder-action@v2
+      with:
+        url: 'https://sukunakai.github.io/STREAM-VIBE/admin/'
+        platform: 'android'
+        output: 'admin-apk'
+
     - name: Upload Admin APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: StreamVibe-Admin-APK
-        path: admin.html
+        path: admin-apk/**/*.apk
