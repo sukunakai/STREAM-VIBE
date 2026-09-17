@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>StreamVibe | Free OTT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #e50914;
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --text: #ffffff;
+            --text-secondary: #b3b3b3;
+            --border: #333333;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
+
+        .hidden { display: none !important; }
+        .aspect-16-9 { aspect-ratio: 16 / 9; width: 100%; object-fit: cover; border-radius: 8px; background: #222; }
+        
+        /* Header */
+        header { 
+            background: #000; color: #fff; padding: 15px 20px; 
+            display: flex; align-items: center; justify-content: space-between; 
+            position: sticky; top: 0; z-index: 100; height: 65px;
+            border-bottom: 1px solid var(--border);
+        }
+        .header-search-container { flex: 1; margin: 0 15px; position: relative; }
+        .header-search { width: 100%; background: #2a2a2a; border: 1px solid var(--border); color: #fff; padding: 8px 15px; border-radius: 20px; font-size: 0.9rem; outline: none; }
+        
+        .profile-btn { 
+            width: 38px; height: 38px; border: 2px solid #fff; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            background: #333; font-size: 1.1rem;
+        }
+
+        /* Feed & Cards */
+        .movie-grid { padding: 15px; display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 600px; margin: auto; }
+        .movie-card { cursor: pointer; background: var(--surface); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); padding-bottom: 12px; }
+        .movie-card img { width: 100%; margin-bottom: 10px; }
+        .movie-card h3 { font-weight: 700; font-size: 1.1rem; padding: 0 12px; }
+        .movie-card p { font-size: 0.85rem; color: var(--text-secondary); padding: 0 12px; }
+
+        /* Admin & Forms */
+        .form-box { max-width: 450px; margin: 30px auto; background: var(--surface); padding: 25px; border-radius: 12px; border: 1px solid var(--border); }
+        input, textarea, select { width: 100%; padding: 12px; margin: 10px 0; background: #2a2a2a; border: 1px solid var(--border); color: #fff; border-radius: 6px; font-size: 14px; outline: none; }
+        button { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 6px; margin-top: 10px; font-size: 15px; }
+        button:hover { background: #b80710; }
+
+        /* Streaming View */
+        .player-container { width: 100%; background: #000; position: sticky; top: 65px; z-index: 99; }
+        video { width: 100%; aspect-ratio: 16/9; background: #000; display: block; }
+        .interaction-bar { padding: 15px 20px; display: flex; gap: 25px; align-items: center; border-bottom: 1px solid var(--border); background: var(--surface); }
+        .action-btn { background: none; border: none; color: #fff; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.95rem; }
+        .action-btn svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 2; }
+        .action-btn.active svg { fill: var(--primary); stroke: var(--primary); }
+        .movie-details { padding: 20px; background: var(--surface); min-height: 40vh; }
+        .movie-details h2 { font-size: 1.4rem; margin-bottom: 8px; font-weight: 800; }
+
+        /* Profile Sidebar */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; justify-content: flex-end; }
+        .profile-sidebar { width: 85%; max-width: 320px; height: 100%; background: var(--surface); padding: 25px 20px; overflow-y: auto; border-left: 1px solid var(--border); }
+        .profile-section { margin-bottom: 25px; }
+        .profile-section h4 { border-bottom: 2px solid var(--primary); margin-bottom: 12px; padding-bottom: 5px; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .remove-link { color: #ff4444; font-size: 0.8rem; cursor: pointer; }
+        .back-btn { font-size: 1.4rem; color: white; background: none; border: none; cursor: pointer; margin-right: 15px; }
+        
+        .admin-toggle-link { text-align: center; margin-top: 15px; font-size: 0.8rem; color: #888; cursor: pointer; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <!-- USER APP HOME -->
+    <div id="user-panel">
+        <header id="main-header">
+            <div style="font-weight: 800; font-size: 1.2rem; color: var(--primary);">STREAMVIBE</div>
+            <div class="header-search-container">
+                <input type="text" class="header-search" placeholder="Search movies..." onkeyup="filterMovies(this.value)">
+            </div>
+            <div class="profile-btn" onclick="toggleProfile(true)">👤</div>
+        </header>
+
+        <header id="stream-header" class="hidden">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <div id="stream-header-title" style="font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Title</div>
+        </header>
+
+        <!-- HOME FEED -->
+        <div id="home-feed" class="movie-grid">
+            <!-- Dynamic Movies Injected Here -->
+        </div>
+
+        <!-- STREAMING VIEW -->
+        <div id="stream-view" class="hidden">
+            <div class="player-container">
+                <video id="main-video-player" controls autoplay playsinline></video>
+            </div>
+            <div class="interaction-bar">
+                <button class="action-btn" id="like-btn" onclick="toggleMetric('likes')">
+                    <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    <span>Like</span>
+                </button>
+                <button class="action-btn" id="watchlist-btn" onclick="toggleMetric('watchlist')">
+                    <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                    <span>Watchlist</span>
+                </button>
+            </div>
+            <div class="movie-details">
+                <h2 id="stream-title">Movie Title</h2>
+                <p id="stream-date" style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 12px;"></p>
+                <p id="stream-desc" style="font-size: 0.95rem; color: #ddd;"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL (Hidden by default, toggle via footer link) -->
+    <div id="admin-panel" class="hidden">
+        <header>
+            <div style="font-weight: 800; color: var(--primary);">STREAMVIBE ADMIN</div>
+            <button style="width: auto; padding: 6px 14px; margin:0;" onclick="switchToUser()">Back to App</button>
+        </header>
+        <div class="form-box">
+            <h3 style="margin-bottom: 15px; text-align: center;">Upload Movie / Episode</h3>
+            <input type="text" id="m-title" placeholder="Movie / Anime Title (e.g. Black Torch Ep 1)">
+            <input type="url" id="m-video" placeholder="Direct MP4 Video URL">
+            <input type="url" id="m-thumb" placeholder="Poster Image URL (.jpg/.png)">
+            <textarea id="m-desc" placeholder="Movie Description..." rows="3"></textarea>
+            <input type="text" id="m-date" placeholder="Release Year / Info (e.g. 2026 • Action)">
+            <button onclick="uploadMovie()">Publish to App</button>
+        </div>
+        <div style="text-align: center; margin-bottom: 40px;">
+            <p class="admin-toggle-link" onclick="localStorage.removeItem('isAdmin'); switchToUser();">Exit Admin Mode</p>
+        </div>
+    </div>
+
+    <!-- PROFILE MODAL -->
+    <div id="profile-modal" class="modal-overlay hidden">
+        <div class="profile-sidebar">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h3 style="font-weight: 800;">My Profile</h3>
+                <button onclick="toggleProfile(false)" style="background: none; border: none; color:#fff; font-size: 1.4rem; width:auto; padding:0;">✕</button>
+            </div>
+
+            <div class="profile-section">
+                <h4>Liked Movies</h4>
+                <div id="liked-list"><p style="font-size:0.8rem; color:#777;">No liked movies</p></div>
+            </div>
+
+            <div class="profile-section">
+                <h4>My Watchlist</h4>
+                <div id="watchlist-list"><p style="font-size:0.8rem; color:#777;">Watchlist is empty</p></div>
+            </div>
+
+            <div style="margin-top: 40px;">
+                <p class="admin-toggle-link" onclick="toggleProfile(false); checkAdminSecret();">🔐 Admin Panel Login</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // LocalStorage based database for 100% free serverless persistence on device/browser
+        let movies = JSON.parse(localStorage.getItem('sv_movies')) || [
+            {
+                id: '1',
+                title: 'Black Torch [Hindi] S01E01',
+                videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                thumbnail: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800',
+                description: 'An action-packed shinobi anime series debut episode streamed in high quality.',
+                date: '2026 • Action • 1 Season'
+            }
+        ];
+
+        let userMetrics = JSON.parse(localStorage.getItem('sv_metrics')) || { likes: {}, watchlist: {} };
+        let currentMovieId = null;
+
+        function saveMovies() {
+            localStorage.setItem('sv_movies', JSON.stringify(movies));
+        }
+
+        function saveMetrics() {
+            localStorage.setItem('sv_metrics', JSON.stringify(userMetrics));
+        }
+
+        // Init Feed
+        renderMovies();
+
+        function renderMovies(filter = "") {
+            const feed = document.getElementById('home-feed');
+            const filtered = movies.filter(m => m.title.toLowerCase().includes(filter));
+
+            if(filtered.length === 0) {
+                feed.innerHTML = `<p style="text-align:center; color:#777; margin-top:40px;">No movies found.</p>`;
+                return;
+            }
+
+            feed.innerHTML = filtered.map(m => `
+                <div class="movie-card" onclick="openMovie('${m.id}')">
+                    <img src="${m.thumbnail}" class="aspect-16-9" loading="lazy">
+                    <h3>${m.title}</h3>
+                    <p>${m.date}</p>
+                </div>
+            `).join('');
+        }
+
+        window.filterMovies = (q) => renderMovies(q.toLowerCase());
+
+        window.openMovie = (id) => {
+            currentMovieId = id;
+            const movie = movies.find(m => m.id === id);
+            if(!movie) return;
+
+            document.getElementById('home-feed').classList.add('hidden');
+            document.getElementById('main-header').classList.add('hidden');
+            document.getElementById('stream-view').classList.remove('hidden');
+            document.getElementById('stream-header').classList.remove('hidden');
+
+            document.getElementById('stream-header-title').innerText = movie.title;
+            document.getElementById('stream-title').innerText = movie.title;
+            document.getElementById('stream-date').innerText = movie.date;
+            document.getElementById('stream-desc').innerText = movie.description;
+
+            const player = document.getElementById('main-video-player');
+            player.src = movie.videoUrl;
+            player.play().catch(e => console.log("Auto-play prevented"));
+
+            updateButtonsUI();
+        };
+
+        window.goBack = () => {
+            const player = document.getElementById('main-video-player');
+            player.pause();
+            player.src = "";
+
+            document.getElementById('stream-view').classList.add('hidden');
+            document.getElementById('stream-header').classList.add('hidden');
+            document.getElementById('home-feed').classList.remove('hidden');
+            document.getElementById('main-header').classList.remove('hidden');
+            currentMovieId = null;
+        };
+
+        window.toggleMetric = (type) => {
+            if(!currentMovieId) return;
+            const movie = movies.find(m => m.id === currentMovieId);
+            
+            if(userMetrics[type][currentMovieId]) {
+                delete userMetrics[type][currentMovieId];
+            } else {
+                userMetrics[type][currentMovieId] = movie.title;
+            }
+            saveMetrics();
+            updateButtonsUI();
+        };
+
+        function updateButtonsUI() {
+            if(!currentMovieId) return;
+            const isLiked = !!userMetrics.likes[currentMovieId];
+            const inWatchlist = !!userMetrics.watchlist[currentMovieId];
+
+            document.getElementById('like-btn').classList.toggle('active', isLiked);
+            document.getElementById('watchlist-btn').classList.toggle('active', inWatchlist);
+        }
+
+        window.toggleProfile = (show) => {
+            const modal = document.getElementById('profile-modal');
+            if(show) {
+                modal.classList.remove('hidden');
+                renderProfileLists();
+            } else {
+                modal.classList.add('hidden');
+            }
+        };
+
+        function renderProfileLists() {
+            const lList = document.getElementById('liked-list');
+            const wList = document.getElementById('watchlist-list');
+
+            const genHTML = (obj, type) => {
+                const keys = Object.keys(obj);
+                if(keys.length === 0) return `<p style="font-size:0.8rem; color:#777;">Empty</p>`;
+                return keys.map(id => `
+                    <div class="list-item">
+                        <span>${obj[id]}</span>
+                        <span class="remove-link" onclick="removeItem('${id}', '${type}')">Remove</span>
+                    </div>
+                `).join('');
+            };
+
+            lList.innerHTML = genHTML(userMetrics.likes, 'likes');
+            wList.innerHTML = genHTML(userMetrics.watchlist, 'watchlist');
+        }
+
+        window.removeItem = (id, type) => {
+            delete userMetrics[type][id];
+            saveMetrics();
+            renderProfileLists();
+            updateButtonsUI();
+        };
+
+        // Admin functionality
+        window.uploadMovie = () => {
+            const title = document.getElementById('m-title').value.trim();
+            const videoUrl = document.getElementById('m-video').value.trim();
+            const thumbnail = document.getElementById('m-thumb').value.trim();
+            const description = document.getElementById('m-desc').value.trim();
+            const date = document.getElementById('m-date').value.trim();
+
+            if(!title || !videoUrl || !thumbnail) {
+                alert("Please fill title, video URL, and thumbnail URL!");
+                return;
+            }
+
+            const newId = Date.now().toString();
+            movies.unshift({ id: newId, title, videoUrl, thumbnail, description, date });
+            saveMovies();
+
+            alert("Success! Movie published live to app. 🎉");
+            ['m-title', 'm-video', 'm-thumb', 'm-desc', 'm-date'].forEach(id => document.getElementById(id).value = '');
+            switchToUser();
+            renderMovies();
+        };
+
+        window.checkAdminSecret = () => {
+            const pass = prompt("Enter Admin Password:");
+            if(pass === "admin123") {
+                localStorage.setItem('isAdmin', 'true');
+                document.getElementById('user-panel').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+            } else if(pass !== null) {
+                alert("Incorrect Password!");
+            }
+        };
+
+        function switchToUser() {
+            document.getElementById('admin-panel').classList.add('hidden');
+            document.getElementById('user-panel').classList.remove('hidden');
+            renderMovies();
+        }
+
+        // Auto check if admin was active
+        if(localStorage.getItem('isAdmin') === 'true') {
+            // Uncomment line below if you want direct admin opening on refresh
+            // document.getElementById('user-panel').classList.add('hidden');
+            // document.getElementById('admin-panel').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
