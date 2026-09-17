@@ -1,0 +1,15 @@
+{
+  "name": "StreamVibe",
+  "short_name": "StreamVibe",
+  "start_url": "/STREAM-VIBE/user/",
+  "display": "standalone",
+  "background_color": "#080b11",
+  "theme_color": "#e50914",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/color/512/netflix.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
