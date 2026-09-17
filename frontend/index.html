@@ -3,60 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream Vibe - OTT</title>
+    <title>StreamVibe - OTT</title>
     <style>
-        body { background-color: #121212; color: #ffffff; font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        body { background: #121212; color: #fff; font-family: Arial; margin: 0; padding: 0; }
         .header { padding: 15px; background: #1f1f1f; display: flex; justify-content: space-between; align-items: center; }
-        .search-bar { width: 70%; padding: 8px 12px; border-radius: 20px; border: none; background: #2a2a2a; color: white; }
-        .section-title { padding: 10px 15px; font-size: 18px; font-weight: bold; }
-        .movie-grid { display: flex; overflow-x: auto; padding: 10px 15px; gap: 15px; }
+        .search-bar { width: 70%; padding: 8px; border-radius: 20px; border: none; background: #2a2a2a; color: white; }
+        .section-title { padding: 15px; font-size: 18px; font-weight: bold; }
+        .movie-grid { display: flex; overflow-x: auto; padding: 0 15px; gap: 15px; }
         .movie-card { min-width: 120px; background: #1e1e1e; border-radius: 8px; overflow: hidden; text-align: center; cursor: pointer; }
         .movie-card img { width: 120px; height: 170px; object-fit: cover; }
         .movie-title { font-size: 12px; padding: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .upload-btn-container { padding: 20px; text-align: center; }
-        .upload-btn { background: #e50914; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; text-decoration: none; }
+        .upload-btn { background: #e50914; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="header">
         <h2>StreamVibe</h2>
-        <input type="text" class="search-bar" placeholder="Search Movies, Anime...">
+        <input type="text" class="search-bar" placeholder="Search...">
     </div>
     <div class="upload-btn-container">
         <a href="../admin/upload.html" class="upload-btn">+ Upload Movie/Series</a>
     </div>
     <div class="section-title">Trending Movies</div>
     <div class="movie-grid" id="movieGrid">
-        <p style="padding: 10px; color: #888;">Loading movies from database...</p>
+        <p style="padding: 15px; color: #888;">Loading movies...</p>
     </div>
 
     <script>
-        const supabaseUrl = 'https://jjpzecchomlrjtmvshvn.supabase.co';
-        const supabaseKey = 'sb_publishable_0E5zGq8-reKSdg8hjaw5SA__LsyIBIm';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const sb = window.supabase.createClient(
+            'https://jjpzecchomlrjtmvshvn.supabase.co',
+            'sb_publishable_0E5zGq8-reKSdg8hjaw5SA__LsyIBIm'
+        );
 
-        async function fetchMovies() {
-            const { data, error } = await supabase.from('movies').select('*').order('created_at', { ascending: false });
-            
+        async function loadMovies() {
             const grid = document.getElementById('movieGrid');
-            grid.innerHTML = ''; 
+            const { data, error } = await sb.from('movies').select('*');
 
             if (error) {
-                grid.innerHTML = '<p style="color: red;">Error loading movies</p>';
+                grid.innerHTML = '<p style="padding:15px; color:red;">Error: ' + error.message + '</p>';
                 return;
             }
 
-            if (data.length === 0) {
-                grid.innerHTML = '<p style="padding: 10px;">No movies uploaded yet. Upload one now!</p>';
+            if (!data || data.length === 0) {
+                grid.innerHTML = '<p style="padding:15px;">No movies found in database.</p>';
                 return;
             }
 
+            grid.innerHTML = '';
             data.forEach(movie => {
                 const card = document.createElement('div');
                 card.className = 'movie-card';
-                card.onclick = () => window.location.href = movie.video_url; 
-                
+                card.onclick = () => window.location.href = movie.video_url;
                 card.innerHTML = `
                     <img src="${movie.poster_url}" alt="Poster">
                     <div class="movie-title">${movie.title}</div>
@@ -65,7 +64,7 @@
             });
         }
 
-        fetchMovies();
+        loadMovies();
     </script>
 </body>
 </html>
