@@ -1,4 +1,4 @@
-name: Build StreamVibe Android Packages
+name: Build StreamVibe APKs
 
 on:
   push:
@@ -6,38 +6,56 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-apks:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
 
-    - name: Install PWABuilder CLI
-      run: npm install -g @pwabuilder/cli
+    - name: Install Bubblewrap CLI
+      run: npm install -g @bubblewrap/cli
 
-    - name: Generate User App Android Package
+    # --- 1. BUILD USER APP APK ---
+    - name: Build User App APK
       run: |
-        mkdir -p user-package
-        pwabuilder package --manifest https://sukunakai.github.io/STREAM-VIBE/user/manifest.json --platforms android --directory ./user-package || true
+        mkdir -p user-build
+        cd user-build
+        # Bubblewrap manifest se direct Android project generate karega
+        bubblewrap init --manifest=https://sukunakai.github.io/STREAM-VIBE/user/manifest.json --directory=.
+        # Gradle ke zariye APK compile karega
+        bubblewrap build
 
-    - name: Generate Admin Panel Android Package
-      run: |
-        mkdir -p admin-package
-        pwabuilder package --manifest https://sukunakai.github.io/STREAM-VIBE/admin/manifest.json --platforms android --directory ./admin-package || true
-
-    - name: Upload User Android Package Artifact
+    - name: Upload User APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: StreamVibe-User-Android-Source
-        path: user-package/
+        name: StreamVibe-User-APK
+        path: |
+          user-build/*.apk
+          user-build/app/build/outputs/apk/debug/*.apk
 
-    - name: Upload Admin Android Package Artifact
+    # --- 2. BUILD ADMIN PANEL APK ---
+    - name: Build Admin Panel APK
+      run: |
+        mkdir -p admin-build
+        cd admin-build
+        bubblewrap init --manifest=https://sukunakai.github.io/STREAM-VIBE/admin/manifest.json --directory=.
+        bubblewrap build
+
+    - name: Upload Admin APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: StreamVibe-Admin-Android-Source
-        path: admin-package/
+        name: StreamVibe-Admin-APK
+        path: |
+          admin-build/*.apk
+          admin-build/app/build/outputs/apk/debug/*.apk
