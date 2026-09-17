@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +16,6 @@
         .upload-btn-container { padding: 20px; text-align: center; }
         .upload-btn { background: #e50914; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; text-decoration: none; }
     </style>
-    <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -33,13 +32,11 @@
     </div>
 
     <script>
-        // Database Connection
         const supabaseUrl = 'https://jjpzecchomlrjtmvshvn.supabase.co';
         const supabaseKey = 'sb_publishable_0E5zGq8-reKSdg8hjaw5SA__LsyIBIm';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         async function fetchMovies() {
-            // Database se movies la rahe hain
             const { data, error } = await supabase.from('movies').select('*').order('created_at', { ascending: false });
             
             const grid = document.getElementById('movieGrid');
@@ -51,15 +48,13 @@
             }
 
             if (data.length === 0) {
-                grid.innerHTML = '<p>No movies uploaded yet. Upload one now!</p>';
+                grid.innerHTML = '<p style="padding: 10px;">No movies uploaded yet. Upload one now!</p>';
                 return;
             }
 
-            // Har movie ka card banana
             data.forEach(movie => {
                 const card = document.createElement('div');
                 card.className = 'movie-card';
-                // Movie par click karte hi video play hone jayegi (abhi ke liye direct link khulega)
                 card.onclick = () => window.location.href = movie.video_url; 
                 
                 card.innerHTML = `
