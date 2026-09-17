@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repository
-    - uses: actions/checkout@v4
+      uses: actions/checkout@v4
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -23,16 +23,14 @@ jobs:
       with:
         node-version: '18'
 
-    - name: Install Bubblewrap CLI (PWABuilder Android tool)
+    - name: Install Bubblewrap CLI
       run: npm install -g @bubblewrap/cli
 
-    - name: Generate Android Project for User App
+    - name: Generate User App APK
       run: |
         mkdir -p user-apk-build
         cd user-apk-build
-        # Non-interactive Bubblewrap init using user web app URL
         bubblewrap init --manifest=https://sukunakai.github.io/STREAM-VIBE/user/manifest.json --directory=. || true
-        # Build signed debug APK
         bubblewrap build || true
 
     - name: Upload User APK Artifact
@@ -43,7 +41,7 @@ jobs:
           user-apk-build/*.apk
           user-apk-build/app/build/outputs/apk/debug/*.apk
 
-    - name: Generate Android Project for Admin Panel
+    - name: Generate Admin Panel APK
       run: |
         mkdir -p admin-apk-build
         cd admin-apk-build
