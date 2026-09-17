@@ -3,78 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Content - StreamVibe</title>
-    <style>
-        body { background-color: #121212; color: #ffffff; font-family: Arial, sans-serif; padding: 20px; }
-        .form-container { max-width: 400px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 8px; }
-        input, select { width: 100%; padding: 10px; margin: 10px 0; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #e50914; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        #statusMsg { margin-top: 15px; padding: 10px; border-radius: 4px; text-align: center; font-weight: bold; display: none; }
-    </style>
+    <title>StreamVibe Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background: #121212; color: #fff; font-family: Arial; padding: 20px; }
+        .box { max-width: 400px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 8px; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; background: #2a2a2a; border: 1px solid #444; color: #fff; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #e50914; color: #fff; border: none; font-weight: bold; cursor: pointer; }
+    </style>
 </head>
 <body>
-    <div class="form-container">
-        <h2>Upload Movie / Series</h2>
-        <form id="uploadForm">
-            <label>Title:</label>
-            <input type="text" id="title" placeholder="Movie Name" required>
-            <label>Category:</label>
-            <select id="category">
+    <div class="box">
+        <h2>Admin Upload</h2>
+        <form id="form">
+            <input type="text" id="t" placeholder="Title" required>
+            <select id="c">
                 <option value="Movie">Movie</option>
                 <option value="Anime">Anime</option>
-                <option value="Series">TV Series</option>
             </select>
-            <label>Poster Image URL:</label>
-            <input type="url" id="poster" placeholder="Image link (URL)" required>
-            <label>Video Streaming URL:</label>
-            <input type="url" id="videoUrl" placeholder="MP4 / HLS Link" required>
-            <button type="submit" id="submitBtn">Upload Now</button>
+            <input type="url" id="p" placeholder="Poster URL" required>
+            <input type="url" id="v" placeholder="Video URL" required>
+            <button type="submit">Upload Now</button>
         </form>
-        <div id="statusMsg"></div>
     </div>
 
     <script>
-        const supabaseUrl = 'https://jjpzecchomlrjtmvshvn.supabase.co';
-        const supabaseKey = 'sb_publishable_0E5zGq8-reKSdg8hjaw5SA__LsyIBIm';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const sb = window.supabase.createClient(
+            'https://jjpzecchomlrjtmvshvn.supabase.co',
+            'sb_publishable_0E5zGq8-reKSdg8hjaw5SA__LsyIBIm'
+        );
 
-        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+        document.getElementById('form').onsubmit = async (e) => {
             e.preventDefault();
-            
-            const btn = document.getElementById('submitBtn');
-            const msg = document.getElementById('statusMsg');
-            btn.innerText = 'Uploading...';
-            msg.style.display = 'none';
+            alert('Button dab gaya, data bhej rahe hain...');
 
-            const title = document.getElementById('title').value;
-            const category = document.getElementById('category').value;
-            const poster_url = document.getElementById('poster').value;
-            const video_url = document.getElementById('videoUrl').value;
-
-            try {
-                const { data, error } = await supabase
-                    .from('movies')
-                    .insert([{ title, category, poster_url, video_url }]);
-
-                if (error) {
-                    throw error;
+            const { data, error } = await sb.from('movies').insert([
+                {
+                    title: document.getElementById('t').value,
+                    category: document.getElementById('c').value,
+                    poster_url: document.getElementById('p').value,
+                    video_url: document.getElementById('v').value
                 }
+            ]);
 
-                msg.style.display = 'block';
-                msg.style.background = '#28a745';
-                msg.style.color = 'white';
-                msg.innerText = 'Movie Uploaded Successfully! 🎉';
-                document.getElementById('uploadForm').reset();
-            } catch (err) {
-                msg.style.display = 'block';
-                msg.style.background = '#dc3545';
-                msg.style.color = 'white';
-                msg.innerText = 'Failed: ' + err.message;
-            } finally {
-                btn.innerText = 'Upload Now';
+            if (error) {
+                alert('Database Error: ' + error.message);
+            } else {
+                alert('Success! Movie database mein chali gayi.');
+                document.getElementById('form').reset();
             }
-        });
+        };
     </script>
 </body>
 </html>
