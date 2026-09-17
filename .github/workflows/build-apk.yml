@@ -17,27 +17,20 @@ jobs:
       with:
         node-version: '18'
 
-    - name: Install PWABuilder CLI
-      run: npm install -g @pwabuilder/cli
-
-    - name: Build User App Package
+    - name: Prepare App Source Folders
       run: |
-        mkdir -p user-output
-        pwabuilder package --manifest https://sukunakai.github.io/STREAM-VIBE/user/manifest.json --platforms android --directory ./user-output || true
+        mkdir -p user-dist admin-dist
+        cp -r user/* user-dist/
+        cp -r admin/* admin-dist/
 
-    - name: Build Admin Panel Package
-      run: |
-        mkdir -p admin-output
-        pwabuilder package --manifest https://sukunakai.github.io/STREAM-VIBE/admin/manifest.json --platforms android --directory ./admin-output || true
-
-    - name: Upload User APK Artifact
+    - name: Upload User App Source Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: StreamVibe-User-Package
-        path: user-output/
+        name: StreamVibe-User-App-Files
+        path: user-dist/
 
-    - name: Upload Admin APK Artifact
+    - name: Upload Admin Panel Source Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: StreamVibe-Admin-Package
-        path: admin-output/
+        name: StreamVibe-Admin-Panel-Files
+        path: admin-dist/
