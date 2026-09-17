@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamVibe Admin - MovieBox Style</title>
+    <title>StreamVibe Admin - Telegram Bot Sync</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background: #121212; color: #fff; font-family: Arial, sans-serif; padding: 20px; }
@@ -12,15 +12,20 @@
         input, select { width: 100%; padding: 12px; margin: 10px 0; background: #2a2a2a; border: 1px solid #444; color: #fff; box-sizing: border-box; border-radius: 5px; font-size: 14px; }
         button { width: 100%; padding: 14px; background: #e50914; color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 15px; font-size: 16px; transition: 0.2s; }
         button:hover { background: #b80710; }
+        .btn-tg { background: #0088cc; margin-bottom: 10px; }
+        .btn-tg:hover { background: #006699; }
         label { font-size: 13px; color: #bbb; display: block; margin-top: 5px; }
     </style>
 </head>
 <body>
     <div class="box">
-        <h2>StreamVibe Upload</h2>
+        <h2>StreamVibe Telegram Sync</h2>
+        
+        <button type="button" class="btn-tg" onclick="fetchLatestTelegramFile()">📥 Fetch Latest Video from Telegram Bot</button>
+        
         <form id="form">
             <label>Movie / Anime Title:</label>
-            <input type="text" id="title" placeholder="e.g. Cyberpunk Edgerunners" required>
+            <input type="text" id="title" placeholder="e.g. Black Torch" required>
             
             <label>Category:</label>
             <select id="category">
@@ -30,10 +35,10 @@
             </select>
             
             <label>Poster Image URL:</label>
-            <input type="url" id="posterUrl" placeholder="Paste image link (.jpg/.png)" required>
+            <input type="url" id="posterUrl" placeholder="Paste poster image link" required>
             
-            <label>Video Stream Link (Direct MP4 / Cloud Link):</label>
-            <input type="url" id="videoUrl" placeholder="Paste direct video stream link" required>
+            <label>Video Stream Link:</label>
+            <input type="url" id="videoUrl" placeholder="Will auto-fill from Telegram or paste manually" required>
             
             <button type="submit" id="subBtn">Publish to App</button>
         </form>
@@ -44,6 +49,53 @@
             'https://jjpzecchomlrjtmvshvn.supabase.co',
             'sb_publishable_0E5zGq8-reKSdg8hjaw5SA__LsyIBIm'
         );
+
+        const TG_TOKEN = '8894666603:AAEU5pM_Q0n52ZHnnl49ENlrqmjCwjZ63m0';
+
+        async function fetchLatestTelegramFile() {
+            try {
+                const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/getUpdates`);
+                const data = await res.json();
+                
+                if (!data.ok || data.result.length === 0) {
+                    alert('Bot par koi message nahi mila! Pehle apne bot ko Telegram par video bhejo.');
+                    return;
+                }
+
+                // Find the latest message containing a video or document
+                let videoFileId = null;
+                for (let i = data.result.length - 1; i >= 0; i--) {
+                    const msg = data.result[i].message;
+                    if (msg && (msg.video || msg.document)) {
+                        videoFileId = msg.video ? msg.video.file_id : msg.document.file_id;
+                        break;
+                    }
+                }
+
+                if (!videoFileId) {
+                    alert('Recent messages mein koi video file nahi mili! Bot ko video bhejo.');
+                    return;
+                }
+
+                // Get file path from Telegram
+                const fileRes = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/getFile?file_id=${videoFileId}`);
+                const fileData = await fileRes.json();
+
+                if (!fileData.ok) {
+                    alert('File path fetch karne mein error aayi.');
+                    return;
+                }
+
+                const filePath = fileData.result.file_path;
+                const directUrl = `https://api.telegram.org/file/bot${TG_TOKEN}/${filePath}`;
+
+                document.getElementById('videoUrl').value = directUrl;
+                alert('Success! Telegram se video link fetch ho gaya hai. 🎉');
+
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
 
         document.getElementById('form').onsubmit = async (e) => {
             e.preventDefault();
