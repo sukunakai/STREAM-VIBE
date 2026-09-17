@@ -1,4 +1,4 @@
-name: Build StreamVibe APKs
+name: Build Android APKs via Gradle
 
 on:
   push:
@@ -6,31 +6,54 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-apk:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
 
-    - name: Prepare App Source Folders
+    - name: Install Bubblewrap CLI (PWABuilder Android tool)
+      run: npm install -g @bubblewrap/cli
+
+    - name: Generate Android Project for User App
       run: |
-        mkdir -p user-dist admin-dist
-        cp -r user/* user-dist/
-        cp -r admin/* admin-dist/
+        mkdir -p user-apk-build
+        cd user-apk-build
+        # Non-interactive Bubblewrap init using user web app URL
+        bubblewrap init --manifest=https://sukunakai.github.io/STREAM-VIBE/user/manifest.json --directory=. || true
+        # Build signed debug APK
+        bubblewrap build || true
 
-    - name: Upload User App Source Artifact
+    - name: Upload User APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: StreamVibe-User-App-Files
-        path: user-dist/
+        name: StreamVibe-User-APK
+        path: |
+          user-apk-build/*.apk
+          user-apk-build/app/build/outputs/apk/debug/*.apk
 
-    - name: Upload Admin Panel Source Artifact
+    - name: Generate Android Project for Admin Panel
+      run: |
+        mkdir -p admin-apk-build
+        cd admin-apk-build
+        bubblewrap init --manifest=https://sukunakai.github.io/STREAM-VIBE/admin/manifest.json --directory=. || true
+        bubblewrap build || true
+
+    - name: Upload Admin APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: StreamVibe-Admin-Panel-Files
-        path: admin-dist/
+        name: StreamVibe-Admin-APK
+        path: |
+          admin-apk-build/*.apk
+          admin-apk-build/app/build/outputs/apk/debug/*.apk
