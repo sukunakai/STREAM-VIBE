@@ -1,0 +1,15 @@
+{
+  "name": "StreamVibe Admin",
+  "short_name": "SV Admin",
+  "start_url": "/STREAM-VIBE/admin/",
+  "display": "standalone",
+  "background_color": "#080b11",
+  "theme_color": "#e50914",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/color/512/administrative-tools.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
