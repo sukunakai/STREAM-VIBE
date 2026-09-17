@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,10 +7,9 @@
     <style>
         body { background-color: #121212; color: #ffffff; font-family: Arial, sans-serif; padding: 20px; }
         .form-container { max-width: 400px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 8px; }
-        input, select { width: 100%; padding: 10px; margin: 10px 0; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 4px; }
-        button { width: 100%; padding: 10px; background: #e50914; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #e50914; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 10px; }
     </style>
-    <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -34,29 +33,27 @@
     </div>
 
     <script>
-        // Database Connection
         const supabaseUrl = 'https://jjpzecchomlrjtmvshvn.supabase.co';
         const supabaseKey = 'sb_publishable_0E5zGq8-reKSdg8hjaw5SA__LsyIBIm';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         document.getElementById('uploadForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+            e.preventDefault(); 
             
             const title = document.getElementById('title').value;
             const category = document.getElementById('category').value;
             const poster_url = document.getElementById('poster').value;
             const video_url = document.getElementById('videoUrl').value;
 
-            // Database mein data bhej rahe hain
             const { data, error } = await supabase
                 .from('movies')
                 .insert([{ title: title, category: category, poster_url: poster_url, video_url: video_url }]);
 
             if (error) {
-                alert('Upload Failed: ' + error.message);
+                alert('Error: ' + error.message);
             } else {
                 alert('Movie Uploaded Successfully! 🎉');
-                document.getElementById('uploadForm').reset(); // Form clear karna
+                document.getElementById('uploadForm').reset();
             }
         });
     </script>
